@@ -7,8 +7,11 @@ class CodeIterator implements Iterator<Op> {
 
     private ByteBuffer buf;
 
-    public CodeIterator(ByteBuffer buf) {
+    private ClassFile cf;
+
+    public CodeIterator(ByteBuffer buf, ClassFile cf) {
         this.buf = buf;
+        this.cf = cf;
     }
 
     public boolean hasNext() {
@@ -21,7 +24,7 @@ class CodeIterator implements Iterator<Op> {
 
     public Op next() {
         OpCode c = OpCode.forByte(buf.get());
-        return c.args.makeOp(c, buf);
+        return c.args.makeOp(c, buf, cf);
     }
 
 }

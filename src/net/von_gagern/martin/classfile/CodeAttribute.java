@@ -52,7 +52,7 @@ public class CodeAttribute extends Attribute
 
     public Iterator<Op> iterator() {
         if (code == null) parse();
-        return new CodeIterator(code);
+        return new CodeIterator(code, getClassFile());
     }
 
     public AttributeOwner getParent() {

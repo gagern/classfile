@@ -5,49 +5,49 @@ import java.nio.ByteBuffer;
 public enum OpArgs {
 
     NONE(0) {
-        public Op makeOp(OpCode code, ByteBuffer buf) {
+        public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
             return code;
         }
     },
 
     CP1(1) {
-        public Op makeOp(OpCode code, ByteBuffer buf) {
-            return new ConstantOp(code, 2, buf.get() & 0xff);
+        public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
+            return new ConstantOp(code, 2, buf.get() & 0xff, cf);
         }
     },
 
     CP2(2) {
-        public Op makeOp(OpCode code, ByteBuffer buf) {
-            return new ConstantOp(code, 3, buf.getShort() & 0xffff);
+        public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
+            return new ConstantOp(code, 3, buf.getShort() & 0xffff, cf);
         }
     },
 
     LV1(1) {
-        public Op makeOp(OpCode code, ByteBuffer buf) {
+        public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
             return new LocalVarOp(code, 2, buf.get() & 0xff);
         }
     },
 
     I8(1) {
-        public Op makeOp(OpCode code, ByteBuffer buf) {
+        public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
             return new ImmediateOp(code, 2, buf.get() & 0xff);
         }
     },
 
     I16(1) {
-        public Op makeOp(OpCode code, ByteBuffer buf) {
+        public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
             return new ImmediateOp(code, 3, buf.getShort() & 0xffff);
         }
     },
 
     OFF2(2) {
-        public Op makeOp(OpCode code, ByteBuffer buf) {
+        public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
             return new BranchOp(code, 3, buf.position() - 1, buf.getShort());
         }
     },
 
     OFF4(4) {
-        public Op makeOp(OpCode code, ByteBuffer buf) {
+        public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
             return new BranchOp(code, 5, buf.position() - 1, buf.getShort());
         }
     },
@@ -63,7 +63,7 @@ public enum OpArgs {
             int.class,
             long.class
         };
-        public Op makeOp(OpCode code, ByteBuffer buf) {
+        public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
             byte b = buf.get();
             Class<?> t = TABLE[b - 4];
             return new NewArrayOp(t);
@@ -71,13 +71,13 @@ public enum OpArgs {
     },
 
     IINC(2) { // LV, i8
-        public Op makeOp(OpCode code, ByteBuffer buf) {
+        public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
             return new IIncOp(3, buf.get() & 0xff, buf.get());
         }
     },
 
     TABLESWITCH(-1) {
-        public Op makeOp(OpCode code, ByteBuffer buf) {
+        public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
             return new TableSwitchOp(buf);
         }
         @Override public int getNumBytes(ByteBuffer buf, int idx) {
@@ -89,7 +89,7 @@ public enum OpArgs {
     },
 
     LOOKUPSWITCH(-1) {
-        public Op makeOp(OpCode code, ByteBuffer buf) {
+        public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
             return new LookupSwitchOp(buf);
         }
         @Override public int getNumBytes(ByteBuffer buf, int idx) {
@@ -100,8 +100,8 @@ public enum OpArgs {
     },
 
     INVOKEDYNAMIC(4) { // CP, 00
-        public Op makeOp(OpCode code, ByteBuffer buf) {
-            Op op = new ConstantOp(code, 5, buf.getShort() & 0xff);
+        public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
+            Op op = new ConstantOp(code, 5, buf.getShort() & 0xff, cf);
             if (buf.getShort() != 0)
                 throw new IllegalArgumentException("Misformed instruction");
             return op;
@@ -109,7 +109,7 @@ public enum OpArgs {
     },
 
     WIDE(-1) {
-        public Op makeOp(OpCode code, ByteBuffer buf) {
+        public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
             OpCode op = OpCode.forByte(buf.get());
             if (op.args == LV1) {
                 return new LocalVarOp(op, 4, buf.getShort() & 0xffff);
@@ -127,7 +127,7 @@ public enum OpArgs {
     },
 
     MULTIANEWARRAY(3) { // CP, u8
-        public Op makeOp(OpCode code, ByteBuffer buf) {
+        public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
             int type = buf.getShort() & 0xffff;
             int dim = buf.get() & 0xff;
             return new MultiANewArrayOp(type, dim);
@@ -144,6 +144,6 @@ public enum OpArgs {
         return numBytes;
     }
 
-    public abstract Op makeOp(OpCode code, ByteBuffer buf);
+    public abstract Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf);
 
 }

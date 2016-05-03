@@ -93,6 +93,10 @@ public class ClassFile implements AttributeOwner {
         return Collections.unmodifiableList(Arrays.asList(a));
     }
 
+    public Constant getConstant(int idx) {
+        return constantPool.get(idx);
+    }
+
     public List<Constant> getConstantPool() {
         return constantPool;
     }

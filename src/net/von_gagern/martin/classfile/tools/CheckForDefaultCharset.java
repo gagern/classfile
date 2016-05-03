@@ -4,11 +4,14 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import net.von_gagern.martin.classfile.ClassFile;
 import net.von_gagern.martin.classfile.Method;
+import net.von_gagern.martin.classfile.CodeAttribute;
 import net.von_gagern.martin.classfile.Constant;
+import net.von_gagern.martin.classfile.ConstantOp;
 import net.von_gagern.martin.classfile.Op;
 
 class CheckForDefaultCharset {
@@ -63,28 +66,64 @@ class CheckForDefaultCharset {
     }
 
     public static void main(String[] args) throws Exception {
+        CheckForDefaultCharset check = new CheckForDefaultCharset();
         int exitStatus = 0;
-        for (String arg: args) {
-            boolean filePrinted = false;
-            DataInputStream din = new DataInputStream
-                (new FileInputStream(new File(arg)));
-            ClassFile cf = new ClassFile(din);
-            din.close();
-            for (Constant c: cf.getConstantPool()) {
-                if (c instanceof Constant.Methodref) {
-                    Constant.Methodref m = (Constant.Methodref)c;
-                    if (FORBIDDEN.contains(m) || FORBIDDEN.contains(m.getClazz())) {
-                        if (!filePrinted) {
-                            System.out.println(cf);
-                            filePrinted = true;
-                            exitStatus = 1;
-                        }
-                        System.out.println("  " + c);
+        for (String arg: args)
+            if (check.visitFile(arg))
+                exitStatus = 1;
+        System.exit(exitStatus);
+    }
+
+    private boolean visitFile(String name) throws Exception {
+        DataInputStream din = new DataInputStream
+            (new FileInputStream(new File(name)));
+        ClassFile cf = new ClassFile(din);
+        din.close();
+        return visit(cf);
+    }
+
+    private boolean visit(ClassFile cf) {
+        if (!visit(cf.getConstantPool()))
+            return false;
+        System.out.println(cf);
+        for (Method m: cf.getMethods())
+            visit(m);
+        return true;
+    }
+
+    private boolean visit(List<Constant> cp) {
+        for (Constant c: cp)
+            if (visit(c))
+                return true;
+        return false;
+    }
+
+    private boolean visit(Constant c) {
+        if (c instanceof Constant.Methodref) {
+            Constant.Methodref m = (Constant.Methodref)c;
+            if (FORBIDDEN.contains(m) || FORBIDDEN.contains(m.getClazz())) {
+                return true;
+            }
+        }
+        return false;
+    }
+        
+    private void visit(Method m) {
+        boolean printed = false;
+        CodeAttribute code = m.getCode();
+        if (code == null) return;
+        for (Op op: code) {
+            if (op instanceof ConstantOp) {
+                Constant c = ((ConstantOp)op).getConstant();
+                if (visit(c)) {
+                    if (!printed) {
+                        System.out.println("  " + m.getName());
+                        printed = true;
                     }
+                    System.out.println("    " + c);
                 }
             }
         }
-        System.exit(exitStatus);
     }
 
 }
