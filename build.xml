@@ -1,0 +1,19 @@
+<project name="Classfile" default="compile" basedir=".">
+  <description>
+    Package for JVM bytecode inspection
+  </description>
+
+  <target name="clean" description="Clean build directory">
+    <delete dir="build"/>
+  </target>
+
+  <target name="compile" description="Compile sources">
+    <mkdir dir="build"/>
+    <javac srcdir="src" destdir="build"
+           source="1.7" target="1.7"
+           includeAntRuntime="false" fork="true">
+      <compilerarg value="-Xlint"/>
+    </javac>
+  </target>
+
+</project>
