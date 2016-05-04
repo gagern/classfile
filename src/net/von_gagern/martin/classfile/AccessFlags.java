@@ -95,6 +95,10 @@ public class AccessFlags extends AbstractSet<AccessFlag> {
         this.known = known;
     }
 
+    public int bitPattern() {
+        return bits;
+    }
+
     @Override public int size() {
         int n = 0;
         for (AccessFlag flag: known)

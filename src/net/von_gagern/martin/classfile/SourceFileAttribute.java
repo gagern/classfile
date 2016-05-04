@@ -15,4 +15,8 @@ public class SourceFileAttribute extends Attribute {
         return (Constant.Utf8)owner.getClassFile().getConstant(idx);
     }
 
+    @Override public void writeContent(ClassWriter w) {
+        w.write2(getNameConstant());
+    }
+
 }

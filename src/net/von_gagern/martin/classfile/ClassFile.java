@@ -1,11 +1,16 @@
 package net.von_gagern.martin.classfile;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.io.DataInput;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ClassFile implements AttributeOwner {
 
@@ -150,6 +155,40 @@ public class ClassFile implements AttributeOwner {
         return unmodifiableList(a);
     }
 
+    private static final MethodType ATTRIBUTE_CTOR_TYPE =
+        MethodType.methodType
+        (void.class, ByteBuffer.class, ClassFile.class);
+
+    private static final Map<String, MethodHandle> ATTRIBUTE_CTOR_MAP =
+        new HashMap<>();
+
+    private static MethodHandle getFactory(String name) {
+        synchronized (ATTRIBUTE_CTOR_MAP) {
+            MethodHandle mh = ATTRIBUTE_CTOR_MAP.get(name);
+            if (mh != null) return mh;
+            if (ATTRIBUTE_CTOR_MAP.containsKey(name)) return null;
+            try {
+                Class<?> cls1 = Class.forName
+                    (name + "Attribute", true,
+                     ClassFile.class.getClassLoader());
+                Class<? extends Attribute> cls2 =
+                    cls1.asSubclass(Attribute.class);
+                mh = MethodHandles.lookup()
+                    .findConstructor(cls2, ATTRIBUTE_CTOR_TYPE);
+            } catch (ClassNotFoundException e) {
+                return null;
+            } catch (ClassCastException e) {
+                return null;
+            } catch (NoSuchMethodException e) {
+                return null;
+            } catch (IllegalAccessException e) {
+                return null;
+            }
+            ATTRIBUTE_CTOR_MAP.put(name, mh);
+            return mh;
+        }
+    }
+
     Attribute readAttribute(DataInput in, AttributeOwner owner)
         throws IOException
     {
@@ -162,27 +201,21 @@ public class ClassFile implements AttributeOwner {
                 throw new IOException("Could not completely skip attribute");
         } else {
             buf = BufferDataInput.readBuffer(in, length);
-            if (CodeAttribute.ATTRIBUTE_NAME.equals(name)) {
-                return new CodeAttribute(buf, owner);
-            } else if (ConstantValueAttribute.ATTRIBUTE_NAME.equals(name)) {
-                return new ConstantValueAttribute(buf, owner);
-            } else if (EnclosingMethodAttribute.ATTRIBUTE_NAME.equals(name)) {
-                return new EnclosingMethodAttribute(buf, owner);
-            } else if (ExceptionsAttribute.ATTRIBUTE_NAME.equals(name)) {
-                return new ExceptionsAttribute(buf, owner);
-            } else if (InnerClassesAttribute.ATTRIBUTE_NAME.equals(name)) {
-                return new InnerClassesAttribute(buf, owner);
-            } else if (SignatureAttribute.ATTRIBUTE_NAME.equals(name)) {
-                return new SignatureAttribute(buf, owner);
-            } else if (SourceFileAttribute.ATTRIBUTE_NAME.equals(name)) {
-                return new SourceFileAttribute(buf, owner);
-            } else if (StackMapTableAttribute.ATTRIBUTE_NAME.equals(name)) {
-                return new StackMapTableAttribute(buf, owner);
-            } else if (SyntheticAttribute.ATTRIBUTE_NAME.equals(name)) {
-                return new SyntheticAttribute(buf, owner);
+            MethodHandle ctor = getFactory(name);
+            if (ctor != null) {
+                try {
+                    return (Attribute)ctor.invokeExact(buf, owner);
+                } catch (RuntimeException e) {
+                    throw e;
+                } catch (Error e) {
+                    throw e;
+                } catch (Throwable e) {
+                    throw new RuntimeException
+                        ("Failed to construct attribute " + name, e);
+                }
             }
         }
-        return new Attribute(name, buf, owner);
+        return new UnknownAttribute(name, buf, owner);
     }
 
     public String toString() {

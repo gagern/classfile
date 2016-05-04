@@ -2,7 +2,7 @@ package net.von_gagern.martin.classfile;
 
 import java.nio.ByteBuffer;
 
-public abstract class StackMapFrame {
+public abstract class StackMapFrame implements ClassWriter.Writable {
 
     int offsetDelta;
 
@@ -10,9 +10,19 @@ public abstract class StackMapFrame {
         this.offsetDelta = offsetDelta;
     }
 
+    public abstract void writeTo(ClassWriter w);
+
     static class Same extends StackMapFrame {
         Same(int offsetDelta) {
             super(offsetDelta);
+        }
+        public void writeTo(ClassWriter w) {
+            if (offsetDelta < 64) {
+                w.writeU1(offsetDelta);
+            } else {
+                w.writeU1(251);
+                w.writeU2(offsetDelta);
+            }
         }
     }
 
@@ -22,6 +32,15 @@ public abstract class StackMapFrame {
             super(offsetDelta);
             this.stackItem = stackItem;
         }
+        public void writeTo(ClassWriter w) {
+            if (offsetDelta < 128 - 64) {
+                w.writeU1(offsetDelta + 64);
+            } else {
+                w.writeU1(247);
+                w.writeU2(offsetDelta);
+            }
+            w.write(stackItem);
+        }
     }
 
     static class Chop extends StackMapFrame {
@@ -30,6 +49,10 @@ public abstract class StackMapFrame {
             super(offsetDelta);
             this.k = k;
         }
+        public void writeTo(ClassWriter w) {
+            w.writeU1(251 - k);
+            w.writeU2(offsetDelta);
+        }
     }
 
     static class Append extends StackMapFrame {
@@ -37,6 +60,12 @@ public abstract class StackMapFrame {
         Append(int offsetDelta, VerificationTypeInfo[] locals) {
             super(offsetDelta);
             this.locals = locals;
+        }
+        public void writeTo(ClassWriter w) {
+            w.writeU1(locals.length + 251);
+            w.writeU2(offsetDelta);
+            for (int i = 0; i < locals.length; ++i)
+                w.write(locals[i]);
         }
     }
 
@@ -48,6 +77,16 @@ public abstract class StackMapFrame {
             super(offsetDelta);
             this.locals = locals;
             this.stack = stack;
+        }
+        public void writeTo(ClassWriter w) {
+            w.writeU1(255);
+            w.writeU2(offsetDelta);
+            w.writeU2(locals.length);
+            for (int i = 0; i < locals.length; ++i)
+                w.write(locals[i]);
+            w.writeU2(stack.length);
+            for (int i = 0; i < stack.length; ++i)
+                w.write(stack[i]);
         }
     }
 

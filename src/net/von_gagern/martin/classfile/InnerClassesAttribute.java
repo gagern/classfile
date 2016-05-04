@@ -1,6 +1,8 @@
 package net.von_gagern.martin.classfile;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -12,6 +14,11 @@ public class InnerClassesAttribute extends Attribute
 
     public InnerClassesAttribute(ByteBuffer content, AttributeOwner owner) {
         super(ATTRIBUTE_NAME, content, owner);
+    }
+
+    public InnerClassesAttribute(List<InnerClass> innerClasses) {
+        super(ATTRIBUTE_NAME, null, null);
+        cached = Collections.unmodifiableList(new ArrayList<>(innerClasses));
     }
 
     private List<InnerClass> cached;
@@ -29,6 +36,13 @@ public class InnerClassesAttribute extends Attribute
 
     public Iterator<InnerClass> iterator() {
         return getInnerClasses().iterator();
+    }
+
+    @Override public void writeContent(ClassWriter w) {
+        List<InnerClass> innerClasses = getInnerClasses();
+        w.writeU2(innerClasses.size());
+        for (InnerClass innerClass: innerClasses)
+            w.write(innerClass);
     }
 
 }

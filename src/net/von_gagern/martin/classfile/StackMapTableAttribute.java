@@ -22,4 +22,11 @@ public class StackMapTableAttribute extends Attribute {
         return ClassFile.unmodifiableList(frames);
     }
 
+    @Override public void writeContent(ClassWriter w) {
+        List<StackMapFrame> frames = getFrames();
+        w.writeU2(frames.size());
+        for (StackMapFrame frame: frames)
+            w.write(frame);
+    }
+
 }

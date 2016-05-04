@@ -4,7 +4,7 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public class Attribute {
+public abstract class Attribute implements ClassWriter.Writable {
 
     public final String name;
 
@@ -12,7 +12,7 @@ public class Attribute {
 
     AttributeOwner owner;
 
-    public Attribute(String name, ByteBuffer content, AttributeOwner owner) {
+    protected Attribute(String name, ByteBuffer content, AttributeOwner owner) {
         this.name = name;
         this.buf = content;
         this.owner = owner;
@@ -20,6 +20,21 @@ public class Attribute {
 
     public ByteBuffer contentBuffer() {
         return buf.asReadOnlyBuffer();
+    }
+
+    public void writeTo(ClassWriter w) {
+        w.write2(new Constant.Utf8(name));
+        ClassWriter.Deferred count = w.deferU4();
+        writeContent(w);
+        count.writeByteCount();
+    }
+
+    public void writeContent(ClassWriter w) {
+        w.write(buf);
+    }
+
+    public boolean isUnderstood() {
+        return true;
     }
 
 }

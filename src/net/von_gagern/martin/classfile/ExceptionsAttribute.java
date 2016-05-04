@@ -29,4 +29,11 @@ public class ExceptionsAttribute extends Attribute
         return getExceptions().iterator();
     }
 
+    @Override public void writeContent(ClassWriter w) {
+        List<Constant.Class> exceptions = getExceptions();
+        w.writeU2(exceptions.size());
+        for (Constant.Class exception: exceptions)
+            w.write2(exception);
+    }
+
 }

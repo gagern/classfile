@@ -10,4 +10,7 @@ public class SyntheticAttribute extends Attribute {
         super(ATTRIBUTE_NAME, content, owner);
     }
 
+    @Override public void writeContent(ClassWriter w) {
+    }
+
 }

@@ -73,6 +73,8 @@ public abstract class Constant {
         }
 
         @Override public boolean equals(Object o) {
+            if (this == o)
+                return true;
             if (o == null || !getClass().equals(o.getClass()))
                 return false;
             Constant.Class c = (Constant.Class)o;
@@ -128,6 +130,8 @@ public abstract class Constant {
         }
 
         @Override public boolean equals(Object o) {
+            if (this == o)
+                return true;
             if (o == null || !getClass().equals(o.getClass()))
                 return false;
             Constant.Ref c = (Constant.Ref)o;
@@ -268,6 +272,8 @@ public abstract class Constant {
         }
 
         @Override public boolean equals(Object o) {
+            if (this == o)
+                return true;
             if (o == null || !getClass().equals(o.getClass()))
                 return false;
             Constant.String c = (Constant.String)o;
@@ -307,6 +313,8 @@ public abstract class Constant {
         }
 
         @Override public boolean equals(Object o) {
+            if (this == o)
+                return true;
             if (o == null || !getClass().equals(o.getClass()))
                 return false;
             Constant.Integer c = (Constant.Integer)o;
@@ -346,6 +354,8 @@ public abstract class Constant {
         }
 
         @Override public boolean equals(Object o) {
+            if (this == o)
+                return true;
             if (o == null || !getClass().equals(o.getClass()))
                 return false;
             Constant.Float c = (Constant.Float)o;
@@ -389,6 +399,8 @@ public abstract class Constant {
         }
 
         @Override public boolean equals(Object o) {
+            if (this == o)
+                return true;
             if (o == null || !getClass().equals(o.getClass()))
                 return false;
             Constant.Long c = (Constant.Long)o;
@@ -433,6 +445,8 @@ public abstract class Constant {
         }
 
         @Override public boolean equals(Object o) {
+            if (this == o)
+                return true;
             if (o == null || !getClass().equals(o.getClass()))
                 return false;
             Constant.Double c = (Constant.Double)o;
@@ -496,6 +510,8 @@ public abstract class Constant {
         }
 
         @Override public boolean equals(Object o) {
+            if (this == o)
+                return true;
             if (o == null || !getClass().equals(o.getClass()))
                 return false;
             Constant.NameAndType c = (Constant.NameAndType)o;
@@ -535,6 +551,8 @@ public abstract class Constant {
         }
 
         @Override public boolean equals(Object o) {
+            if (this == o)
+                return true;
             if (o == null || !getClass().equals(o.getClass()))
                 return false;
             Constant.Utf8 c = (Constant.Utf8)o;
@@ -583,6 +601,8 @@ public abstract class Constant {
         }
 
         @Override public boolean equals(Object o) {
+            if (this == o)
+                return true;
             if (o == null || !getClass().equals(o.getClass()))
                 return false;
             Constant.MethodHandle c = (Constant.MethodHandle)o;
@@ -624,6 +644,8 @@ public abstract class Constant {
         }
 
         @Override public boolean equals(Object o) {
+            if (this == o)
+                return true;
             if (o == null || !getClass().equals(o.getClass()))
                 return false;
             Constant.MethodType c = (Constant.MethodType)o;
@@ -685,6 +707,8 @@ public abstract class Constant {
         }
 
         @Override public boolean equals(Object o) {
+            if (this == o)
+                return true;
             if (o == null || !getClass().equals(o.getClass()))
                 return false;
             return true;

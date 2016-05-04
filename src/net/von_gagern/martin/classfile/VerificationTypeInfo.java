@@ -1,8 +1,10 @@
 package net.von_gagern.martin.classfile;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.List;
 
-public class VerificationTypeInfo {
+public class VerificationTypeInfo implements ClassWriter.Writable {
 
     public static final VerificationTypeInfo TOP =
         new VerificationTypeInfo("top", null);
@@ -74,16 +76,20 @@ public class VerificationTypeInfo {
         return new VerificationTypeInfo(offset);
     }
 
+    private static final List<VerificationTypeInfo> NO_ARG_TYPES = Arrays.asList
+        (TOP, INTEGER, FLOAT, DOUBLE, LONG, NULL, UNINITIALIZED_THIS);
+
     static VerificationTypeInfo parse(ByteBuffer buf, ClassFile cf) {
         int tag = buf.get() & 0xff;
         switch(tag) {
-        case 0: return TOP;
-        case 1: return INTEGER;
-        case 2: return FLOAT;
-        case 3: return DOUBLE;
-        case 4: return LONG;
-        case 5: return NULL;
-        case 6: return UNINITIALIZED_THIS;
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+            return NO_ARG_TYPES.get(tag);
         case 7:
             int cpool_index = buf.getShort() & 0xffff;
             Constant.Class c = (Constant.Class)cf.getConstant(cpool_index);
@@ -92,6 +98,19 @@ public class VerificationTypeInfo {
             return uninitialized(buf.getShort() & 0xffff);
         default:
             throw new IllegalArgumentException("Invalid tag: " + tag);
+        }
+    }
+
+    public void writeTo(ClassWriter w) {
+        if (type != null) {
+            w.writeU1(7);
+            w.write2(type);
+            return;
+        } else if (name != null) {
+            w.writeU1(NO_ARG_TYPES.indexOf(this));
+        } else {
+            w.writeU1(8);
+            w.writeU2(offset);
         }
     }
 

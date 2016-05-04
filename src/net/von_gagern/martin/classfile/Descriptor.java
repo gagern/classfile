@@ -116,6 +116,9 @@ public abstract class Descriptor {
     static final Atomic SHORT = new Atomic('S', "short", short.class);
     static final Atomic BOOLEAN = new Atomic('Z', "boolean", boolean.class);
     static final Atomic VOID = new Atomic('V', "void", void.class);
+    static final Obj OBJECT = new Obj("java/lang/Object");
+    static final Obj STRING = new Obj("java/lang/String");
+    static final Obj CLASS = new Obj("java/lang/Class");
 
     static Descriptor parse(Constant.Utf8 in) {
         String str = in.toString();

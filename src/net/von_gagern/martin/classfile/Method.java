@@ -14,9 +14,8 @@ public class Method extends Member {
 
     public CodeAttribute getCode() {
         for (Attribute a: attributes)
-            if (a instanceof CodeAttribute &&
-                CodeAttribute.ATTRIBUTE_NAME.equals(a.name))
-                return ((CodeAttribute)a);
+            if (a instanceof CodeAttribute)
+                return (CodeAttribute)a;
         return null;
     }
 

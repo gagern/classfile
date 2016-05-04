@@ -15,4 +15,8 @@ public class ConstantValueAttribute extends Attribute {
         return owner.getClassFile().getConstant(idx);
     }
 
+    @Override public void writeContent(ClassWriter w) {
+        w.write2(getValue());
+    }
+
 }

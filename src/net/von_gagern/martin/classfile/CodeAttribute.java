@@ -2,8 +2,11 @@ package net.von_gagern.martin.classfile;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 public class CodeAttribute extends Attribute
     implements AttributeOwner, Iterable<Op>
@@ -65,6 +68,26 @@ public class CodeAttribute extends Attribute
 
     public List<Attribute> getAttributes() {
         return attributes;
+    }
+
+    public NavigableMap<Integer, Integer> getAddressMap() {
+        NavigableMap<Integer, Integer> res = null, combined = null;
+        for (Attribute a: attributes) {
+            if (a instanceof LineNumberTableAttribute) {
+                LineNumberTableAttribute lnt = (LineNumberTableAttribute)a;
+                NavigableMap<Integer, Integer> map = lnt.getAddressMap();
+                if (res != null) {
+                    if (combined == null) {
+                        combined = new TreeMap<>(res);
+                        res = Collections.unmodifiableNavigableMap(combined);
+                    }
+                    combined.putAll(map);
+                } else {
+                    res = map;
+                }
+            }
+        }
+        return res;
     }
 
 }

@@ -30,4 +30,9 @@ public class EnclosingMethodAttribute extends Attribute {
         return new Constant.Methodref(c, nt);
     }
 
+    @Override public void writeContent(ClassWriter w) {
+        w.write2(getClazz());
+        w.write2(getMethod());
+    }
+
 }
