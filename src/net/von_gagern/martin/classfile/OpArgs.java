@@ -130,7 +130,7 @@ public enum OpArgs {
         public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
             int type = buf.getShort() & 0xffff;
             int dim = buf.get() & 0xff;
-            return new MultiANewArrayOp(type, dim);
+            return new MultiANewArrayOp(type, dim, cf);
         }
     };
 

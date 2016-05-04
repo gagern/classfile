@@ -4,8 +4,8 @@ class MultiANewArrayOp extends ConstantOp {
 
     int dim;
 
-    public MultiANewArrayOp(int type, int dim) {
-        super(OpCode.MULTIANEWARRAY, 4, type);
+    public MultiANewArrayOp(int type, int dim, ClassFile cf) {
+        super(OpCode.MULTIANEWARRAY, 4, type, cf);
         this.dim = dim;
     }
 
