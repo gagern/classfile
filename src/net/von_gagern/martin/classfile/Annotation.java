@@ -32,7 +32,26 @@ class Annotation implements ClassWriter.Writable {
         }
     }
 
-    private static AnnotationValue readValue(ByteBuffer buf, ClassFile cf) {
+    public String toString() {
+        StringBuilder buf = new StringBuilder()
+            .append('@')
+            .append(type.toString().replace('/', '.'));
+        if (elements.isEmpty())
+            return buf.toString();
+        buf.append('(');
+        String sep = "";
+        for (Map.Entry<Constant.Utf8, AnnotationValue> elt:
+                 elements.entrySet()) {
+            buf.append(sep)
+                .append(elt.getKey())
+                .append(" = ")
+                .append(elt.getValue());
+            sep = ", ";
+        }
+        return buf.append(')').toString();
+    }
+
+    static AnnotationValue readValue(ByteBuffer buf, ClassFile cf) {
         char tag = (char)(buf.get() & 0xff);
         int word = buf.getShort() & 0xffff;
         switch (tag) {
