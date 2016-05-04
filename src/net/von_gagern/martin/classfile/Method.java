@@ -8,7 +8,7 @@ public class Method extends Member {
     Descriptor.Method descriptor;
 
     Method(DataInput in, ClassFile cf) throws IOException {
-        super(in, cf);
+        super(AccessFlags.methodFlags(in.readUnsignedShort()), in, cf);
         descriptor = (Descriptor.Method)Descriptor.parse(rawDescriptor);
     }
 

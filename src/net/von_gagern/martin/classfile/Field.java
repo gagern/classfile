@@ -8,7 +8,7 @@ public class Field extends Member {
     Descriptor.Value descriptor;
 
     Field(DataInput in, ClassFile cf) throws IOException {
-        super(in, cf);
+        super(AccessFlags.fieldFlags(in.readUnsignedShort()), in, cf);
         descriptor = (Descriptor.Value)Descriptor.parse(rawDescriptor);
     }
 

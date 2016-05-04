@@ -17,7 +17,7 @@ public class ClassFile implements AttributeOwner {
 
     List<Constant> constantPool;
 
-    int accessFlags;
+    AccessFlags accessFlags;
 
     Constant.Class thisClass;
 
@@ -55,7 +55,7 @@ public class ClassFile implements AttributeOwner {
             constantPool[i].link(constantPool);
         this.constantPool = unmodifiableList(constantPool);
 
-        accessFlags = in.readUnsignedShort();
+        accessFlags = AccessFlags.classFlags(in.readUnsignedShort());
         thisClass = (Constant.Class)readConstant(in);
         superClass = (Constant.Class)readConstant(in);
 
@@ -84,9 +84,7 @@ public class ClassFile implements AttributeOwner {
     }
 
     Constant readConstant(DataInput in) throws IOException {
-        int idx = in.readUnsignedShort();
-        if (idx == 0) return null;
-        return constantPool.get(idx);
+        return getConstant(in.readUnsignedShort());
     }
 
     static <T> List<T> unmodifiableList(T[] a) {
@@ -94,6 +92,7 @@ public class ClassFile implements AttributeOwner {
     }
 
     public Constant getConstant(int idx) {
+        if (idx == 0) return null;
         return constantPool.get(idx);
     }
 
@@ -165,6 +164,22 @@ public class ClassFile implements AttributeOwner {
             buf = BufferDataInput.readBuffer(in, length);
             if (CodeAttribute.ATTRIBUTE_NAME.equals(name)) {
                 return new CodeAttribute(buf, owner);
+            } else if (ConstantValueAttribute.ATTRIBUTE_NAME.equals(name)) {
+                return new ConstantValueAttribute(buf, owner);
+            } else if (EnclosingMethodAttribute.ATTRIBUTE_NAME.equals(name)) {
+                return new EnclosingMethodAttribute(buf, owner);
+            } else if (ExceptionsAttribute.ATTRIBUTE_NAME.equals(name)) {
+                return new ExceptionsAttribute(buf, owner);
+            } else if (InnerClassesAttribute.ATTRIBUTE_NAME.equals(name)) {
+                return new InnerClassesAttribute(buf, owner);
+            } else if (SignatureAttribute.ATTRIBUTE_NAME.equals(name)) {
+                return new SignatureAttribute(buf, owner);
+            } else if (SourceFileAttribute.ATTRIBUTE_NAME.equals(name)) {
+                return new SourceFileAttribute(buf, owner);
+            } else if (StackMapTableAttribute.ATTRIBUTE_NAME.equals(name)) {
+                return new StackMapTableAttribute(buf, owner);
+            } else if (SyntheticAttribute.ATTRIBUTE_NAME.equals(name)) {
+                return new SyntheticAttribute(buf, owner);
             }
         }
         return new Attribute(name, buf, owner);

@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Member implements AttributeOwner {
 
-    private int accessFlags;
+    AccessFlags accessFlags;
 
     Constant.Utf8 name;
 
@@ -18,12 +18,18 @@ public class Member implements AttributeOwner {
 
     ClassFile cf;
 
-    Member(DataInput in, ClassFile cf) throws IOException {
+    Member(AccessFlags accessFlags, DataInput in, ClassFile cf)
+        throws IOException
+    {
         this.cf = cf;
-        accessFlags = in.readUnsignedShort();
+        this.accessFlags = accessFlags;
         name = (Constant.Utf8)cf.readConstant(in);
         rawDescriptor = (Constant.Utf8)cf.readConstant(in);
         attributes = cf.readAttributes(in, this);
+    }
+
+    public AccessFlags getAccessFlags() {
+        return accessFlags;
     }
 
     public AttributeOwner getParent() {
