@@ -49,6 +49,8 @@ public class Disasm {
 
     private String pkg;
 
+    private Constant.Class thisClass;
+
     private void println(String str) throws IOException {
         out.append(indent).append(str).append('\n');
     }
@@ -73,6 +75,7 @@ public class Disasm {
         this.cf = cf;
         this.out = out;
         fmt = new Formatter(out);
+        thisClass = cf.getThisClass();
         String name = cf.getClassName();
         String fileName = null;
         for (Attribute a: cf.getAttributes())
@@ -244,6 +247,12 @@ public class Disasm {
             out.append(c.toString()).append('f');
         } else if (c instanceof Constant.Class) {
             out.append(c.toString()).append(".class");
+        } else if (c instanceof Constant.Ref) {
+            Constant.Ref ref = (Constant.Ref)c;
+            if (thisClass.equals(ref.getClazz()))
+                out.append(ref.getNameAndType().toString());
+            else
+                out.append(c.toString());
         } else {
             out.append(c.toString());
         }
