@@ -1,8 +1,15 @@
 package net.von_gagern.martin.classfile;
 
 import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.List;
 
-public abstract class StackMapFrame implements ClassWriter.Writable {
+public abstract class StackMapFrame
+    extends NonOpElement
+    implements ClassWriter.Writable
+{
+
+    StackMapFrame previous;
 
     int offsetDelta;
 
@@ -10,7 +17,13 @@ public abstract class StackMapFrame implements ClassWriter.Writable {
         this.offsetDelta = offsetDelta;
     }
 
-    public abstract void writeTo(ClassWriter w);
+    List<VerificationTypeInfo> getLocalsOfThisFrame() {
+        return Collections.emptyList();
+    }
+
+    List<VerificationTypeInfo> getStackOfThisFrame() {
+        return Collections.emptyList();
+    }
 
     static class Same extends StackMapFrame {
         Same(int offsetDelta) {
@@ -41,6 +54,9 @@ public abstract class StackMapFrame implements ClassWriter.Writable {
             }
             w.write(stackItem);
         }
+        List<VerificationTypeInfo> getStackOfThisFrame() {
+            return Collections.singletonList(stackItem);
+        }
     }
 
     static class Chop extends StackMapFrame {
@@ -67,6 +83,9 @@ public abstract class StackMapFrame implements ClassWriter.Writable {
             for (int i = 0; i < locals.length; ++i)
                 w.write(locals[i]);
         }
+        List<VerificationTypeInfo> getLocalsOfThisFrame() {
+            return ClassFile.unmodifiableList(locals);
+        }
     }
 
     static class Full extends StackMapFrame {
@@ -87,6 +106,12 @@ public abstract class StackMapFrame implements ClassWriter.Writable {
             w.writeU2(stack.length);
             for (int i = 0; i < stack.length; ++i)
                 w.write(stack[i]);
+        }
+        List<VerificationTypeInfo> getLocalsOfThisFrame() {
+            return ClassFile.unmodifiableList(locals);
+        }
+        List<VerificationTypeInfo> getStackOfThisFrame() {
+            return ClassFile.unmodifiableList(stack);
         }
     }
 

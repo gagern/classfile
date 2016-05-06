@@ -20,11 +20,21 @@ class TableSwitchOp extends SwitchOp {
         offsets = new int[n];
         for (int i = 0; i < n; ++i)
             offsets[i] = buf.getInt();
-        numBytes = buf.position() - opCodePos;
     }
 
     public int getMatch(int idx) {
         return low + idx;
+    }
+
+    @Override public void writeTo(ClassWriter w) {
+        int base = w.posInCode();
+        w.write(code);
+        w.align4();
+        w.linkOffset4(target, base);
+        w.writeI4(low);
+        w.writeI4(high);
+        for (CodeLabel lbl: targets)
+            w.linkOffset4(lbl, base);
     }
 
 }

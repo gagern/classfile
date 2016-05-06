@@ -1,8 +1,6 @@
 package net.von_gagern.martin.classfile;
 
-import java.util.Locale;
-
-public enum OpCode implements Op {
+public enum OpCode implements ClassWriter.Writable {
     NOP(),
     ACONST_NULL(),
     ICONST_M1(),
@@ -227,15 +225,8 @@ public enum OpCode implements Op {
         return (byte)ordinal();
     }
 
-    // Interface Op, to be used for the args == NONE case
-
-    public String asmFormat(String indent) {
-        return String.format((Locale)null, "%-15s",
-                             toString().toLowerCase(Locale.ENGLISH));
-    }
-
-    public int getNumBytes() {
-        return 1;
+    public void writeTo(ClassWriter w) {
+        w.writeU1(ordinal());
     }
 
 }

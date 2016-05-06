@@ -1,15 +1,18 @@
 package net.von_gagern.martin.classfile;
 
 import java.util.Formatter;
+import java.util.List;
 import java.util.Locale;
 
 abstract class SwitchOp extends BranchOp {
 
     protected SwitchOp(OpCode code, int opCodePos) {
-        super(code, -1, opCodePos, 0);
+        super(code, opCodePos, 0);
     }
 
     int[] offsets;
+
+    List<CodeLabel> targets;
 
     @Override public String formatArgs(String indent) {
         Formatter buf = new Formatter((Locale)null);

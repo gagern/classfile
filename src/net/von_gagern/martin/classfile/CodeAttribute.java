@@ -8,9 +8,7 @@ import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
-public class CodeAttribute extends Attribute
-    implements AttributeOwner, Iterable<Op>
-{
+public class CodeAttribute extends Attribute implements AttributeOwner {
 
     public static final String ATTRIBUTE_NAME = "Code";
 
@@ -18,7 +16,7 @@ public class CodeAttribute extends Attribute
 
     int maxLocals;
 
-    ByteBuffer code;
+    List<CodeElement> code;
 
     ExceptionTableEntry[] exceptionTable;
 
@@ -30,20 +28,23 @@ public class CodeAttribute extends Attribute
 
     public void parse() {
         ClassFile cf = owner.getClassFile();
+        CodeListBuilder clb = new CodeListBuilder(cf);
         ByteBuffer content = contentBuffer();
-        String where = cf + "." + ((Method)owner).name;
         maxStack = content.getShort() & 0xffff;
         maxLocals = content.getShort() & 0xffff;
         int count = content.getInt();
         int oldLimit = content.limit();
         int codeEnd = content.position() + count;
         content.limit(codeEnd);
-        code = content.slice();
+        clb.parseCode(content.slice());
         content.limit(oldLimit).position(codeEnd);
         count = content.getShort() & 0xffff;
         exceptionTable = new ExceptionTableEntry[count];
-        for (int i = 0; i < count; ++i)
-            exceptionTable[i] = new ExceptionTableEntry(content, cf, where);
+        for (int i = 0; i < count; ++i) {
+            ExceptionTableEntry ete = new ExceptionTableEntry(content, cf);
+            exceptionTable[i] = ete;
+            clb.link(ete);
+        }
         try {
             attributes = cf.readAttributes(new BufferDataInput(content), this);
         } catch (IOException e) {
@@ -51,11 +52,18 @@ public class CodeAttribute extends Attribute
                 throw (RuntimeException)e.getCause();
             throw new RuntimeException(e);
         }
+        for (Attribute a: attributes) {
+            if (a instanceof LineNumberTableAttribute)
+                clb.parseLineNumbers((LineNumberTableAttribute)a);
+            else if (a instanceof StackMapTableAttribute)
+                clb.parseStackMap((StackMapTableAttribute)a);
+        }
+        code = clb.finish();
     }
 
-    public Iterator<Op> iterator() {
+    public List<CodeElement> getCode() {
         if (code == null) parse();
-        return new CodeIterator(code, getClassFile());
+        return code;
     }
 
     public AttributeOwner getParent() {
@@ -88,6 +96,19 @@ public class CodeAttribute extends Attribute
             }
         }
         return res;
+    }
+
+    @Override public void writeTo(ClassWriter w) {
+        if (code == null) parse();
+        w.writeU2(maxStack);
+        w.writeU2(maxLocals);
+        ClassWriter.Deferred count = w.deferU4();
+        w.markStartOfCode();
+        for (CodeElement op: code)
+            op.writeCode(w);
+        w.writeU2(exceptionTable.length);
+        for (ExceptionTableEntry elt: exceptionTable)
+            w.write(elt);
     }
 
 }

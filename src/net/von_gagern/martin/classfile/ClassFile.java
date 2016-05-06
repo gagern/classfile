@@ -88,6 +88,10 @@ public class ClassFile implements AttributeOwner {
         attributes = readAttributes(in, this);
     }
 
+    public AccessFlags getAccessFlags() {
+        return accessFlags;
+    }
+
     Constant readConstant(DataInput in) throws IOException {
         return getConstant(in.readUnsignedShort());
     }
@@ -157,7 +161,7 @@ public class ClassFile implements AttributeOwner {
 
     private static final MethodType ATTRIBUTE_CTOR_TYPE =
         MethodType.methodType
-        (void.class, ByteBuffer.class, ClassFile.class);
+        (void.class, ByteBuffer.class, AttributeOwner.class);
 
     private static final Map<String, MethodHandle> ATTRIBUTE_CTOR_MAP =
         new HashMap<>();
@@ -168,20 +172,25 @@ public class ClassFile implements AttributeOwner {
             if (mh != null) return mh;
             if (ATTRIBUTE_CTOR_MAP.containsKey(name)) return null;
             try {
+                String pkg = ClassFile.class.getPackage().getName();
                 Class<?> cls1 = Class.forName
-                    (name + "Attribute", true,
+                    (pkg + "." + name + "Attribute", true,
                      ClassFile.class.getClassLoader());
                 Class<? extends Attribute> cls2 =
                     cls1.asSubclass(Attribute.class);
                 mh = MethodHandles.lookup()
                     .findConstructor(cls2, ATTRIBUTE_CTOR_TYPE);
             } catch (ClassNotFoundException e) {
+                e.printStackTrace();
                 return null;
             } catch (ClassCastException e) {
+                e.printStackTrace();
                 return null;
             } catch (NoSuchMethodException e) {
+                e.printStackTrace();
                 return null;
             } catch (IllegalAccessException e) {
+                e.printStackTrace();
                 return null;
             }
             ATTRIBUTE_CTOR_MAP.put(name, mh);
@@ -204,7 +213,7 @@ public class ClassFile implements AttributeOwner {
             MethodHandle ctor = getFactory(name);
             if (ctor != null) {
                 try {
-                    return (Attribute)ctor.invokeExact(buf, owner);
+                    return (Attribute)ctor.invoke(buf, owner);
                 } catch (RuntimeException e) {
                     throw e;
                 } catch (Error e) {

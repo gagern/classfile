@@ -8,11 +8,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import net.von_gagern.martin.classfile.AccessFlag;
+import net.von_gagern.martin.classfile.AccessFlags;
 import net.von_gagern.martin.classfile.ClassFile;
 import net.von_gagern.martin.classfile.CodeAttribute;
+import net.von_gagern.martin.classfile.CodeElement;
 import net.von_gagern.martin.classfile.Constant;
 import net.von_gagern.martin.classfile.Descriptor;
 import net.von_gagern.martin.classfile.Field;
+import net.von_gagern.martin.classfile.LineNumber;
 import net.von_gagern.martin.classfile.Method;
 import net.von_gagern.martin.classfile.Op;
 
@@ -72,7 +76,24 @@ class Disasm {
             name = name.substring(i + 1);
             println("package " + pkg + ";");
         }
-        out.append("class ").append(name);
+        AccessFlags acc = cf.getAccessFlags();
+        if (acc.contains(AccessFlag.SYNTHETIC))
+            out.append("/*synthetic*/ ");
+        if (acc.contains(AccessFlag.PUBLIC))
+            out.append("public ");
+        if (acc.contains(AccessFlag.FINAL))
+            out.append("final ");
+        if (acc.contains(AccessFlag.ABSTRACT))
+            out.append("abstract ");
+        if (acc.contains(AccessFlag.ANNOTATION))
+            out.append("@");
+        if (acc.contains(AccessFlag.ENUM))
+            out.append("enum ");
+        else if (acc.contains(AccessFlag.INTERFACE))
+            out.append("interface ");
+        else
+            out.append("class ");
+        out.append(name);
         String sup = cf.getSuperClassName();
         if (!"java.lang.Object".equals(sup)) {
             out.append("\n    extends ").append(relativeClassName(sup));
@@ -120,24 +141,33 @@ class Disasm {
         out.append(" {\n");
         String oldIndent = indent;
         indent = indent + "    ";
-        String EMPTYADDR = "       ";
-        String opIndent = indent + EMPTYADDR;
-        List<Op> ops = new ArrayList<>();
-        for (Op op: code)
-            ops.add(op);
-        int addr = 0;
-        for (Op op: ops) {
-            String addrStr = EMPTYADDR;
-            addrStr = String.format(Locale.ENGLISH, "%5d: ", addr);
-            out.append(indent)
-                .append(addrStr)
-                .append(' ')
-                .append(op.asmFormat(opIndent))
-                .append("\n");
-            addr += op.getNumBytes();
+        for (CodeElement elt: code.getCode()) {
+            if (elt instanceof Op) {
+                visit((Op)elt);
+            } else if (elt instanceof LineNumber) {
+                visit((LineNumber)elt);
+            }
         }
         indent = oldIndent;
         out.append(indent).append("}\n\n");
+    }
+
+    private static final String EMPTYADDR = "       ";
+
+    private void visit(Op op) throws IOException {
+        int addr = op.getAddress();
+        String addrStr = String.format(Locale.ENGLISH, "%5d: ", addr);
+        out.append(indent)
+            .append(addrStr)
+            .append(' ')
+            .append(op.asmFormat(indent + EMPTYADDR))
+            .append("\n");
+    }
+
+    private void visit(LineNumber ln) throws IOException {
+        out.append(indent)
+            .append(String.format((Locale)null, "#L%-5d", ln.getLine()))
+            .append("\n");
     }
 
 }

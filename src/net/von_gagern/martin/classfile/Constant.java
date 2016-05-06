@@ -658,7 +658,8 @@ public abstract class Constant {
 
     }
 
-    public static class CallSiteSpec extends Constant {
+    // TODO: Make this public once its name and API stabilizes
+    static class CallSiteSpec extends Constant {
 
         public static final int TAG = 18;
 

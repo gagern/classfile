@@ -6,54 +6,54 @@ public enum OpArgs {
 
     NONE(0) {
         public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
-            return code;
+            return new NoArgsOp(code);
         }
     },
 
     CP1(1) {
         public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
-            return new ConstantOp(code, 2, buf.get() & 0xff, cf);
+            return new ConstantOp(code, buf.get() & 0xff, cf);
         }
     },
 
     CP2(2) {
         public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
-            return new ConstantOp(code, 3, buf.getShort() & 0xffff, cf);
+            return new ConstantOp(code, buf.getShort() & 0xffff, cf);
         }
     },
 
     LV1(1) {
         public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
-            return new LocalVarOp(code, 2, buf.get() & 0xff);
+            return new LocalVarOp(code, buf.get() & 0xff);
         }
     },
 
     I8(1) {
         public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
-            return new ImmediateOp(code, 2, buf.get() & 0xff);
+            return new ImmediateOp(code, buf.get() & 0xff);
         }
     },
 
     I16(1) {
         public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
-            return new ImmediateOp(code, 3, buf.getShort() & 0xffff);
+            return new ImmediateOp(code, buf.getShort() & 0xffff);
         }
     },
 
     OFF2(2) {
         public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
-            return new BranchOp(code, 3, buf.position() - 1, buf.getShort());
+            return new BranchOp(code, buf.position() - 1, buf.getShort());
         }
     },
 
     OFF4(4) {
         public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
-            return new BranchOp(code, 5, buf.position() - 1, buf.getShort());
+            return new BranchOp(code, buf.position() - 1, buf.getShort());
         }
     },
 
     NEWARRAY(1) {
-        private final Class<?>[] TABLE = {
+        final Class<?>[] TABLE = {
             boolean.class,
             char.class,
             float.class,
@@ -72,7 +72,7 @@ public enum OpArgs {
 
     IINC(2) { // LV, i8
         public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
-            return new IIncOp(3, buf.get() & 0xff, buf.get());
+            return new IIncOp(buf.get() & 0xff, buf.get());
         }
     },
 
@@ -101,7 +101,7 @@ public enum OpArgs {
 
     INVOKEDYNAMIC(4) { // CP, 00
         public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
-            Op op = new ConstantOp(code, 5, buf.getShort() & 0xff, cf);
+            Op op = new ConstantOp(code, buf.getShort() & 0xffff, cf);
             if (buf.getShort() != 0)
                 throw new IllegalArgumentException("Misformed instruction");
             return op;
@@ -110,13 +110,18 @@ public enum OpArgs {
 
     WIDE(-1) {
         public Op makeOp(OpCode code, ByteBuffer buf, ClassFile cf) {
-            OpCode op = OpCode.forByte(buf.get());
-            if (op.args == LV1) {
-                return new LocalVarOp(op, 4, buf.getShort() & 0xffff);
-            } else if (op.args == IINC) {
-                return new IIncOp(6, buf.getShort() & 0xffff, buf.getShort());
+            code = OpCode.forByte(buf.get());
+            LocalVarOp op;
+            if (code.args == LV1) {
+                op = new LocalVarOp(code, buf.getShort() & 0xffff);
+            } else if (code.args == IINC) {
+                op = new IIncOp(buf.getShort() & 0xffff, buf.getShort());
+            } else {
+                throw new IllegalArgumentException
+                    ("Not a valid wide instruction");
             }
-            throw new IllegalArgumentException("Not a valid wide instruction");
+            op.wide = true;
+            return op;
         }
         @Override public int getNumBytes(ByteBuffer buf, int idx) {
             OpCode op = OpCode.forByte(buf.get(idx));

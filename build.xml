@@ -8,12 +8,20 @@
   </target>
 
   <target name="compile" description="Compile sources">
-    <mkdir dir="build"/>
-    <javac srcdir="src" destdir="build"
+    <mkdir dir="build/classes"/>
+    <javac srcdir="src" destdir="build/classes"
            source="1.7" target="1.7"
+           debug="true"
            includeAntRuntime="false" fork="true">
       <compilerarg value="-Xlint"/>
     </javac>
+  </target>
+
+  <target name="apidoc" description="Create public API documentation">
+    <mkdir dir="build/apidoc"/>
+    <javadoc sourcepath="src" destdir="build/apidoc" source="1.7">
+      <link href="http://docs.oracle.com/javase/7/docs/api/"/>
+    </javadoc>
   </target>
 
 </project>

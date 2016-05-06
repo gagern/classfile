@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Set;
 
 import net.von_gagern.martin.classfile.ClassFile;
-import net.von_gagern.martin.classfile.Method;
 import net.von_gagern.martin.classfile.CodeAttribute;
+import net.von_gagern.martin.classfile.CodeElement;
 import net.von_gagern.martin.classfile.Constant;
 import net.von_gagern.martin.classfile.ConstantOp;
-import net.von_gagern.martin.classfile.Op;
+import net.von_gagern.martin.classfile.Method;
 
 class CheckForDefaultCharset {
 
@@ -112,7 +112,7 @@ class CheckForDefaultCharset {
         boolean printed = false;
         CodeAttribute code = m.getCode();
         if (code == null) return;
-        for (Op op: code) {
+        for (CodeElement op: code.getCode()) {
             if (op instanceof ConstantOp) {
                 Constant c = ((ConstantOp)op).getConstant();
                 if (visit(c)) {

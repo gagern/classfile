@@ -19,11 +19,23 @@ class LookupSwitchOp extends SwitchOp {
             matches[i] = buf.getInt();
             offsets[i] = buf.getInt();
         }
-        numBytes = buf.position() - opCodePos;
     }
 
     public int getMatch(int idx) {
         return matches[idx];
+    }
+
+    @Override public void writeTo(ClassWriter w) {
+        int base = w.posInCode();
+        w.write(code);
+        w.align4();
+        w.linkOffset4(target, base);
+        int n = matches.length;
+        w.writeU4(n);
+        for (int i = 0; i < n; ++i) {
+            w.writeI4(matches[i]);
+            w.linkOffset4(targets.get(i), base);
+        }
     }
 
 }

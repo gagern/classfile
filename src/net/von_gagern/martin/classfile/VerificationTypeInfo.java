@@ -45,6 +45,8 @@ public class VerificationTypeInfo implements ClassWriter.Writable {
 
     private int offset;
 
+    CodeLabel offsetLabel;
+
     private VerificationTypeInfo parent;
 
     private VerificationTypeInfo(String name, VerificationTypeInfo parent) {
@@ -110,8 +112,16 @@ public class VerificationTypeInfo implements ClassWriter.Writable {
             w.writeU1(NO_ARG_TYPES.indexOf(this));
         } else {
             w.writeU1(8);
-            w.writeU2(offset);
+            w.linkOffset2(offsetLabel, 0);
         }
+    }
+
+    boolean isUninitializedWithOffset() {
+        return type == null && name == null;
+    }
+
+    int getUninitializedOffset() {
+        return offset;
     }
 
 }

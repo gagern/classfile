@@ -2,7 +2,9 @@ package net.von_gagern.martin.classfile;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ClassWriter {
 
@@ -125,6 +127,10 @@ public class ClassWriter {
         w.writeTo(this);
     }
 
+    public interface Writable {
+        void writeTo(ClassWriter w);
+    }
+
     public Deferred deferU1() {
         return new Deferred(1);
     }
@@ -142,6 +148,8 @@ public class ClassWriter {
         private int pos;
 
         private int length;
+
+        int base;
 
         Deferred(int length) {
             this.length = length;
@@ -169,14 +177,76 @@ public class ClassWriter {
             }
         }
 
+        void link(int targetAddr) {
+            write(targetAddr - base);
+        }
+
         public void writeByteCount() {
             write(buf.position() - pos - length);
         }
 
     }
 
-    public interface Writable {
-        void writeTo(ClassWriter w);
+    private int startOfCode;
+
+    public void markStartOfCode() {
+        startOfCode = buf.position();
+        knownLabels.clear();
+        unknownLabels.clear();
+    }
+
+    public int posInCode() {
+        return buf.position() - startOfCode;
+    }
+
+    public int align4() {
+        int a = buf.position() - startOfCode;
+        int b = (a + 3) & (~3);
+        int d = b - a;
+        ensureSpace(d);
+        for (int i = 0; i < d; ++i)
+            buf.put((byte)0);
+        return d;
+    }
+
+    private Map<CodeLabel, Integer> knownLabels = new HashMap<>();
+
+    private Map<CodeLabel, List<Deferred>> unknownLabels = new HashMap<>();
+
+    public void linkTarget(CodeLabel lbl) {
+        int addr = buf.position() - startOfCode;
+        knownLabels.put(lbl, addr);
+        List<Deferred> lst = unknownLabels.remove(lbl);
+        if (lst != null)
+            for (Deferred lnk: lst)
+                lnk.link(addr);
+    }
+
+    public void linkOffset2(CodeLabel target, int base) {
+        linkOffset(target, base, 2);
+    }
+
+    public void linkOffset4(CodeLabel target, int base) {
+        linkOffset(target, base, 4);
+    }
+
+    private void linkOffset(CodeLabel target, int base, int length) {
+        Integer addr = knownLabels.get(target);
+        if (addr != null) {
+            if (length == 4)
+                writeI4(addr - base);
+            else
+                writeI2(addr - base);
+            return;
+        }
+        Deferred d = new Deferred(length);
+        d.base = base;
+        List<Deferred> lst = unknownLabels.get(target);
+        if (lst == null) {
+            lst = new ArrayList<>(1);
+            unknownLabels.put(target, lst);
+        }
+        lst.add(d);
     }
 
 }
