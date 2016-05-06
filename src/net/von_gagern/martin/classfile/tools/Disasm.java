@@ -1,9 +1,12 @@
 package net.von_gagern.martin.classfile.tools;
 
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.List;
@@ -64,12 +67,22 @@ class Disasm {
         this.out = out;
         fmt = new Formatter(out);
         String name = cf.getClassName();
+        String fileName = null;
+        for (Attribute a: cf.getAttributes())
+            if (a instanceof SourceFileAttribute)
+                fileName =
+                    ((SourceFileAttribute)a).getNameConstant().toString();
         int i = name.lastIndexOf('.');
         if (i > 0) {
             pkg = name.substring(0, i);
             name = name.substring(i + 1);
+            if (fileName != null &&
+                fileName.indexOf('/') == -1 &&
+                fileName.indexOf('\\') == -1)
+                fileName = pkg.replace('.', '/') + '/' + fileName;
             println("package " + pkg + ";");
         }
+        if (fileName != null) readSource(fileName);
         AccessFlags acc = cf.getAccessFlags();
         if (acc.contains(AccessFlag.SYNTHETIC))
             out.append("/*synthetic*/ ");
@@ -113,6 +126,22 @@ class Disasm {
         out.append("}\n");
     }
 
+    private List<String> sourceLines;
+
+    private void readSource(String name) throws IOException {
+        InputStream in = Thread.currentThread().getContextClassLoader()
+            .getResourceAsStream(name);
+        if (in == null)
+            return;
+        List<String> lines = new ArrayList<>();
+        BufferedReader r =
+            new BufferedReader(new InputStreamReader(in, "UTF-8"));
+        String line;
+        while ((line = r.readLine()) != null)
+            lines.add(line);
+        sourceLines = lines;
+    }
+
     private void visit(Field f) throws IOException {
         out.append(indent)
             .append(relativeClassName(f.getDescriptor()))
@@ -152,7 +181,14 @@ class Disasm {
         out.append(indent).append("}\n\n");
     }
 
-    private static final String EMPTYADDR = "       ";
+    private void visit(LineNumber ln) throws IOException {
+        int n = ln.getLine();
+        out.append(indent)
+            .append(String.format((Locale)null, "#L%-5d", n));
+        if (sourceLines != null && n > 0 && n <= sourceLines.size())
+            out.append(sourceLines.get(n - 1));
+        out.append("\n");
+    }
 
     private void visit(Op op) throws IOException {
         out.append(indent);
@@ -185,12 +221,6 @@ class Disasm {
             }
         }
         out.append("\n");
-    }
-
-    private void visit(LineNumber ln) throws IOException {
-        out.append(indent)
-            .append(String.format((Locale)null, "#L%-5d", ln.getLine()))
-            .append("\n");
     }
 
     public void formatArgs(BranchOp op) throws IOException {
