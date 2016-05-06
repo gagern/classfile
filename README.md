@@ -18,6 +18,12 @@ This tool can be used to ensure that we correctly parsed the things we do parse,
 e.g. by simply comparing the output to what `javap` prints.
 Don’t rely on the output format to remain fixed.
 
+Contrary to `javap`, this tool does not print the list of all constants
+up front, but instead inlines the constants directly with the methods.
+It also will mix in line number information with the lines of assembly code,
+and will even include source line content if the source file
+is availabel on the class path.
+
 Usage:
 
 ```sh

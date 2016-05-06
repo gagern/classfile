@@ -17,7 +17,7 @@ import net.von_gagern.martin.classfile.LineNumber;
 import net.von_gagern.martin.classfile.Method;
 import net.von_gagern.martin.classfile.SourceFileAttribute;
 
-class CheckForDefaultCharset {
+public class CheckForDefaultCharset {
 
     private static final Set<Constant> FORBIDDEN = new HashSet<>();
 
@@ -77,7 +77,7 @@ class CheckForDefaultCharset {
         System.exit(exitStatus);
     }
 
-    private boolean visitFile(String name) throws Exception {
+    public boolean visitFile(String name) throws Exception {
         DataInputStream din = new DataInputStream
             (new FileInputStream(new File(name)));
         ClassFile cf = new ClassFile(din);

@@ -16,8 +16,15 @@ import net.von_gagern.martin.classfile.*;
 
 /**
  * Disassemble class files, similar to {@code javap -v}.
+ *
+ * If debug information (line numbers, source file name) is available,
+ * and if the source file itself can be loaded
+ * through the thread context class loader
+ * (e.g. because the source directory is listed in the class path),
+ * then the output will also contain source code lines
+ * interleaved with the disassembly.
  */
-class Disasm {
+public class Disasm {
 
     public static void main(String[] args) throws Exception {
         int exitStatus = 0;
@@ -62,7 +69,7 @@ class Disasm {
         return cls;
     }
 
-    private Disasm(ClassFile cf, Appendable out) throws IOException {
+    public Disasm(ClassFile cf, Appendable out) throws IOException {
         this.cf = cf;
         this.out = out;
         fmt = new Formatter(out);
