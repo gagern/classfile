@@ -12,10 +12,6 @@ public class ConstantOp extends Op {
         constant = cf.getConstant(cpIndex);
     }
 
-    public String formatArgs(String indent) {
-        return "#" + cpIndex;
-    }
-
     public Constant getConstant() {
         return constant;
     }

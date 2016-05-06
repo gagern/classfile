@@ -2,7 +2,7 @@ package net.von_gagern.martin.classfile;
 
 import java.nio.ByteBuffer;
 
-class TableSwitchOp extends SwitchOp {
+public class TableSwitchOp extends SwitchOp {
 
     int low;
 

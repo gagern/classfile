@@ -2,7 +2,7 @@ package net.von_gagern.martin.classfile;
 
 import java.nio.ByteBuffer;
 
-class LookupSwitchOp extends SwitchOp {
+public class LookupSwitchOp extends SwitchOp {
 
     int[] matches;
 

@@ -14,17 +14,6 @@ public abstract class Op extends CodeElement implements ClassWriter.Writable {
         return code;
     }
 
-    public String asmFormat(String indent) {
-        String str = code.toString().toLowerCase(Locale.ENGLISH);
-        str = String.format((Locale)null, "%-15s", str);
-        String args = formatArgs(indent);
-        if (args != null)
-            str = str  + " " + args;
-        return str;
-    }
-
-    public abstract String formatArgs(String indent);
-
     public void writeCode(ClassWriter w) {
         w.write(this);
     }

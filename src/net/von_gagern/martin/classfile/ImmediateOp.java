@@ -1,6 +1,6 @@
 package net.von_gagern.martin.classfile;
 
-class ImmediateOp extends Op {
+public class ImmediateOp extends Op {
 
     int immediateValue;
 
@@ -9,8 +9,8 @@ class ImmediateOp extends Op {
         this.immediateValue = immediateValue;
     }
 
-    public String formatArgs(String indent) {
-        return Integer.toString(immediateValue);
+    public int getImmediateValue() {
+        return immediateValue;
     }
 
     public void writeTo(ClassWriter w) {

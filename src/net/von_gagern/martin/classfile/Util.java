@@ -2,7 +2,7 @@ package net.von_gagern.martin.classfile;
 
 import java.util.Locale;
 
-class Util {
+public class Util {
 
     private Util() {}
 

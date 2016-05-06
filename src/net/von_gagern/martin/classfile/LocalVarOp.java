@@ -2,29 +2,17 @@ package net.von_gagern.martin.classfile;
 
 import java.util.Locale;
 
-class LocalVarOp extends Op {
+public class LocalVarOp extends Op {
 
     int varIndex;
+
+    LocalVariableInfo var;
 
     boolean wide;
 
     public LocalVarOp(OpCode code, int varIndex) {
         super(code);
         this.varIndex = varIndex;
-    }
-
-    public String asmFormat(String indent) {
-        String str = code.toString().toLowerCase(Locale.ENGLISH);
-        if (wide) {
-            str = String.format((Locale)null, "wide %-10s", str);
-        } else {
-            str = String.format((Locale)null, "%-15s", str);
-        }
-        return str + " " + formatArgs(indent);
-    }
-
-    public String formatArgs(String indent) {
-        return "LV" + varIndex;
     }
 
     public void writeTo(ClassWriter w) {
@@ -36,6 +24,16 @@ class LocalVarOp extends Op {
             w.write(code);
             w.writeU1(varIndex);
         }
+    }
+
+    public LocalVariableInfo getVariableInfo() {
+        if (var == null)
+            var = new LocalVariableInfo.IndexOnly(varIndex);
+        return var;
+    }
+
+    public boolean isWide() {
+        return wide;
     }
 
 }

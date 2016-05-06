@@ -6,10 +6,6 @@ public class NoArgsOp extends Op {
         super(code);
     }
 
-    @Override public String formatArgs(String indent) {
-        return null;
-    }
-
     public void writeTo(ClassWriter w) {
         w.write(code);
     }

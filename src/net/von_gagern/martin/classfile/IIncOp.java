@@ -1,6 +1,6 @@
 package net.von_gagern.martin.classfile;
 
-class IIncOp extends LocalVarOp {
+public class IIncOp extends LocalVarOp {
 
     int increment;
 
@@ -9,8 +9,8 @@ class IIncOp extends LocalVarOp {
         this.increment = increment;
     }
 
-    @Override public String formatArgs(String indent) {
-        return super.formatArgs(indent) + " " + increment;
+    public int getIncrement() {
+        return increment;
     }
 
     public void writeTo(ClassWriter w) {

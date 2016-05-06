@@ -1,6 +1,6 @@
 package net.von_gagern.martin.classfile;
 
-class BranchOp extends Op {
+public class BranchOp extends Op {
 
     int opCodePos;
 
@@ -14,10 +14,6 @@ class BranchOp extends Op {
         this.offset = offset;
     }
 
-    public String formatArgs(String indent) {
-        return Integer.toString(target.getAddress());
-    }
-
     public void writeTo(ClassWriter w) {
         int base = w.posInCode();
         w.write(code);
@@ -27,6 +23,10 @@ class BranchOp extends Op {
         default: throw new IllegalStateException
                 ("Unsupported argument format " + code.args);
         }            
+    }
+
+    public CodeLabel getTarget() {
+        return target;
     }
 
 }

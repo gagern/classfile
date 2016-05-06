@@ -19,12 +19,20 @@ public abstract class LocalVariableInfo implements ClassWriter.Writable {
         index = buf.getShort() & 0xffff;
     }
 
+    LocalVariableInfo(int index) {
+        this.index = index;
+    }
+
     public void writeTo(ClassWriter w) {
         w.writeU2(startPC);
         w.writeU2(length);
         w.write2(name);
         w.write2(descriptorOrSignature);
         w.writeU2(index);
+    }
+
+    public int getIndex() {
+        return index;
     }
 
     public static class WithDescriptor extends LocalVariableInfo {
@@ -36,6 +44,12 @@ public abstract class LocalVariableInfo implements ClassWriter.Writable {
     public static class WithSignature extends LocalVariableInfo {
         WithSignature(ByteBuffer buf, ClassFile cf) {
             super(buf, cf);
+        }
+    }
+
+    public static class IndexOnly extends LocalVariableInfo {
+        public IndexOnly(int index) {
+            super(index);
         }
     }
 
