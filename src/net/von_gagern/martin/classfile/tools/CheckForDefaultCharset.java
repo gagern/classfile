@@ -7,12 +7,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import net.von_gagern.martin.classfile.Attribute;
 import net.von_gagern.martin.classfile.ClassFile;
 import net.von_gagern.martin.classfile.CodeAttribute;
 import net.von_gagern.martin.classfile.CodeElement;
 import net.von_gagern.martin.classfile.Constant;
 import net.von_gagern.martin.classfile.ConstantOp;
+import net.von_gagern.martin.classfile.LineNumber;
 import net.von_gagern.martin.classfile.Method;
+import net.von_gagern.martin.classfile.SourceFileAttribute;
 
 class CheckForDefaultCharset {
 
@@ -85,7 +88,14 @@ class CheckForDefaultCharset {
     private boolean visit(ClassFile cf) {
         if (!visit(cf.getConstantPool()))
             return false;
-        System.out.println(cf);
+        String name = null;
+        for (Attribute a: cf.getAttributes())
+            if (a instanceof SourceFileAttribute)
+                name = ((SourceFileAttribute)a).getNameConstant().toString();
+        if (name != null)
+            System.out.println(cf + " (" + name + ")");
+        else
+            System.out.println(cf);
         for (Method m: cf.getMethods())
             visit(m);
         return true;
@@ -112,15 +122,21 @@ class CheckForDefaultCharset {
         boolean printed = false;
         CodeAttribute code = m.getCode();
         if (code == null) return;
+        int lineno = -1;
         for (CodeElement op: code.getCode()) {
-            if (op instanceof ConstantOp) {
+            if (op instanceof LineNumber) {
+                lineno = ((LineNumber)op).getLine();
+            } else if (op instanceof ConstantOp) {
                 Constant c = ((ConstantOp)op).getConstant();
                 if (visit(c)) {
                     if (!printed) {
                         System.out.println("  " + m.getName());
                         printed = true;
                     }
-                    System.out.println("    " + c);
+                    if (lineno == -1)
+                        System.out.println("    l.?: " + c);
+                    else
+                        System.out.println("    l." + lineno + ": " + c);
                 }
             }
         }
