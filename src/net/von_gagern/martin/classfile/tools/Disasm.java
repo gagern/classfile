@@ -237,8 +237,12 @@ class Disasm {
 
     private void formatArgs(SwitchOp op) throws IOException {
         out.append("{\n");
-        int numCases = op.getNumCases();
-        for (int i = 0; i < numCases; ++i) {
+        int n = op.getNumCases();
+        if (op instanceof TableSwitchOp)
+            fmt.format("{ // %d to %d\n", op.getMatch(0), op.getMatch(n - 1));
+        else
+            fmt.format("{ // %d\n", n);
+        for (int i = 0; i < n; ++i) {
             int match = op.getMatch(i);
             CodeLabel target = op.getTarget(i);
             fmt.format("%s      %11d: %5d\n", indent,
